@@ -2,9 +2,10 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import { Input, Button, message } from "antd";
-import { FiPlus, FiCheck } from "react-icons/fi";
+import { FiPlus, FiCheck, FiFileText } from "react-icons/fi";
 import { supabase } from "@/lib/supabaseClient";
 import { apiFetch } from "@/lib/apiClient";
 import { setOrganizations, setCurrentOrgId } from "@/redux/orgSlice";
@@ -92,11 +93,18 @@ export default function OrganizationsPage() {
 	return (
 		<div className="flex flex-1 flex-col items-center bg-white px-6 py-12">
 			<div className="flex w-full max-w-lg flex-col gap-8">
-				<div className="flex flex-col gap-1">
-					<h1 className="text-2xl font-semibold text-gray-900">Your organizations</h1>
-					<p className="text-sm text-gray-500">
-						Signed in as {userInfo?.email}. Select an organization to work in, or create a new one.
-					</p>
+				<div className="flex items-center justify-between gap-4">
+					<div className="flex flex-col gap-1">
+						<h1 className="text-2xl font-semibold text-gray-900">Your organizations</h1>
+						<p className="text-sm text-gray-500">
+							Signed in as {userInfo?.email}. Select an organization to work in, or create a new one.
+						</p>
+					</div>
+					{currentOrgId && (
+						<Link href="/contracts">
+							<Button icon={<FiFileText />}>View contracts</Button>
+						</Link>
+					)}
 				</div>
 
 				<div className="flex flex-col gap-3">

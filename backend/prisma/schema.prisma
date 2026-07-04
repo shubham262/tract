@@ -18,7 +18,8 @@ model Organization {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  members OrganizationMember[]
+  members   OrganizationMember[]
+  contracts Contract[]
 
   @@map("organizations")
 }
@@ -37,4 +38,50 @@ model OrganizationMember {
   @@unique([organizationId, userId])
   @@index([userId])
   @@map("organization_members")
+}
+
+enum ContractStatus {
+  DRAFT
+  FINALIZED
+  ARCHIVED
+}
+
+enum ContractEventType {
+  CREATED
+  UPDATED
+  STATUS_CHANGED
+  DELETED
+}
+
+model Contract {
+  id              String         @id @default(cuid())
+  organizationId  String
+  status          ContractStatus @default(DRAFT)
+  clientName      String         @map("client_name")
+  poRefNo         String         @map("po_ref_no")
+  fieldData       Json           @map("field_data")
+  createdByUserId String         @map("created_by_user_id")
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([clientName])
+  @@map("contracts")
+}
+
+model ContractEvent {
+  id             String            @id @default(cuid())
+  contractId     String            @map("contract_id")
+  organizationId String            @map("organization_id")
+  eventType      ContractEventType @map("event_type")
+  userId         String            @map("user_id")
+  metadata       Json?
+  createdAt      DateTime          @default(now())
+
+  @@index([contractId])
+  @@index([organizationId])
+  @@map("contract_events")
 }

@@ -5,7 +5,8 @@
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"dev": "nodemon --import ./env.js index.js",
-		"start": "node --import ./env.js index.js"
+		"start": "node --import ./env.js index.js",
+		"seed": "node --import ./env.js prisma/seed.js"
 	},
 	"author": "",
 	"license": "ISC",

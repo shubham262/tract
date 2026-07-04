@@ -2,9 +2,10 @@ import supabase from "../config/supabase.js";
 
 const verifySupabaseToken = async (req, res, next) => {
 	const authHeader = req.headers.authorization || "";
-	const [scheme, token] = authHeader.split(" ");
+	const [scheme, headerToken] = authHeader.split(" ");
+	const token = scheme === "Bearer" && headerToken ? headerToken : req.query.token;
 
-	if (scheme !== "Bearer" || !token) {
+	if (!token) {
 		return res
 			.status(401)
 			.json({ error: "Missing or malformed Authorization header" });
