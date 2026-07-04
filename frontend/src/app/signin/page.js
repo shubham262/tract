@@ -43,7 +43,7 @@ export default function SignInPage() {
 		dispatch(updateUserInfo(data.user));
 
 		message.success("Signed in.");
-		router.push("/");
+		router.push("/organizations");
 	};
 
 	return (

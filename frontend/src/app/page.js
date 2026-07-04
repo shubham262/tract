@@ -1,8 +1,22 @@
+"use client";
+
 import Link from "next/link";
-import { Button } from "antd";
-import { FiFileText, FiArrowRight } from "react-icons/fi";
+import { useSelector, useDispatch } from "react-redux";
+import { Button, message } from "antd";
+import { FiFileText, FiArrowRight, FiLogOut } from "react-icons/fi";
+import { supabase } from "@/lib/supabaseClient";
+import { updateUserInfo } from "@/redux/authSlice";
 
 export default function Home() {
+	const dispatch = useDispatch();
+	const userInfo = useSelector((state) => state.auth.userInfo);
+
+	const handleSignOut = async () => {
+		await supabase.auth.signOut();
+		dispatch(updateUserInfo(null));
+		message.success("Signed out.");
+	};
+
 	return (
 		<div className="flex flex-col flex-1 bg-white">
 			<header className="flex items-center justify-between px-6 py-4 sm:px-12">
@@ -11,12 +25,23 @@ export default function Home() {
 					<span className="text-lg font-semibold text-gray-900">Tract</span>
 				</div>
 				<div className="flex items-center gap-3">
-					<Link href="/signin">
-						<Button>Sign In</Button>
-					</Link>
-					<Link href="/signup">
-						<Button type="primary">Sign Up</Button>
-					</Link>
+					{userInfo ? (
+						<>
+							<span className="hidden text-sm text-gray-500 sm:inline">{userInfo.email}</span>
+							<Button icon={<FiLogOut />} onClick={handleSignOut}>
+								Sign Out
+							</Button>
+						</>
+					) : (
+						<>
+							<Link href="/signin">
+								<Button>Sign In</Button>
+							</Link>
+							<Link href="/signup">
+								<Button type="primary">Sign Up</Button>
+							</Link>
+						</>
+					)}
 				</div>
 			</header>
 
@@ -29,14 +54,24 @@ export default function Home() {
 						Create, track, and manage contracts across your organization from a single console.
 					</p>
 					<div className="flex flex-col gap-3 sm:flex-row">
-						<Link href="/signup">
-							<Button type="primary" size="large" icon={<FiArrowRight />} iconPlacement="end">
-								Get Started
-							</Button>
-						</Link>
-						<Link href="/signin">
-							<Button size="large">Sign In</Button>
-						</Link>
+						{userInfo ? (
+							<Link href="/organizations">
+								<Button type="primary" size="large" icon={<FiArrowRight />} iconPlacement="end">
+									Go to your organizations
+								</Button>
+							</Link>
+						) : (
+							<>
+								<Link href="/signup">
+									<Button type="primary" size="large" icon={<FiArrowRight />} iconPlacement="end">
+										Get Started
+									</Button>
+								</Link>
+								<Link href="/signin">
+									<Button size="large">Sign In</Button>
+								</Link>
+							</>
+						)}
 					</div>
 				</div>
 			</main>
