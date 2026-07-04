@@ -7,6 +7,7 @@ import { Button, message } from "antd";
 import { FiArrowLeft, FiCheckCircle, FiArchive, FiEdit2, FiSave, FiX } from "react-icons/fi";
 import { supabase } from "@/lib/supabaseClient";
 import { apiFetch } from "@/lib/apiClient";
+import AppHeader from "@/components/AppHeader";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const NEXT_STATUS = { DRAFT: "FINALIZED", FINALIZED: "ARCHIVED" };
@@ -138,15 +139,21 @@ export default function ContractDetailPage() {
 
 	if (formData.loading) {
 		return (
-			<div className="flex flex-1 items-center justify-center bg-white px-6 py-12">
-				<p className="text-sm text-gray-500">Loading contract…</p>
+			<div className="flex flex-1 flex-col bg-white">
+				<AppHeader />
+				<div className="flex flex-1 items-center justify-center px-6 py-12">
+					<p className="text-sm text-gray-500">Loading contract…</p>
+				</div>
 			</div>
 		);
 	}
 	if (!formData.contract) {
 		return (
-			<div className="flex flex-1 items-center justify-center bg-white px-6 py-12">
-				<p className="text-sm text-gray-500">Contract not found.</p>
+			<div className="flex flex-1 flex-col bg-white">
+				<AppHeader />
+				<div className="flex flex-1 items-center justify-center px-6 py-12">
+					<p className="text-sm text-gray-500">Contract not found.</p>
+				</div>
 			</div>
 		);
 	}
@@ -155,114 +162,117 @@ export default function ContractDetailPage() {
 	const nextStatus = NEXT_STATUS[contract.status];
 
 	return (
-		<div className="flex flex-1 flex-col items-center bg-white px-6 py-12">
-			<div className="flex w-full max-w-3xl flex-col gap-6">
-				<button
-					onClick={() => router.push("/contracts")}
-					className="flex w-fit items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
-				>
-					<FiArrowLeft /> Back to contracts
-				</button>
+		<div className="flex flex-1 flex-col bg-white">
+			<AppHeader />
+			<div className="flex flex-1 flex-col items-center px-6 py-12">
+				<div className="flex w-full max-w-3xl flex-col gap-6">
+					<button
+						onClick={() => router.push("/contracts")}
+						className="flex w-fit items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
+					>
+						<FiArrowLeft /> Back to contracts
+					</button>
 
-				<div className="flex items-center justify-between">
-					<div className="flex flex-col gap-1">
-						<h1 className="text-2xl font-semibold text-gray-900">{contract.clientName}</h1>
-						<span className="text-sm text-gray-500">PO {contract.poRefNo}</span>
+					<div className="flex items-center justify-between">
+						<div className="flex flex-col gap-1">
+							<h1 className="text-2xl font-semibold text-gray-900">{contract.clientName}</h1>
+							<span className="text-sm text-gray-500">PO {contract.poRefNo}</span>
+						</div>
+						<div className="flex items-center gap-2">
+							<span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
+								{contract.status}
+							</span>
+							{contract.status === "DRAFT" && !formData.editing && (
+								<Button icon={<FiEdit2 />} onClick={startEditing}>
+									Edit
+								</Button>
+							)}
+							{nextStatus && (
+								<Button
+									type="primary"
+									icon={nextStatus === "FINALIZED" ? <FiCheckCircle /> : <FiArchive />}
+									loading={formData.transitioning}
+									onClick={() => handleTransition(nextStatus)}
+								>
+									{nextStatus === "FINALIZED" ? "Finalize" : "Archive"}
+								</Button>
+							)}
+						</div>
 					</div>
-					<div className="flex items-center gap-2">
-						<span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
-							{contract.status}
-						</span>
-						{contract.status === "DRAFT" && !formData.editing && (
-							<Button icon={<FiEdit2 />} onClick={startEditing}>
-								Edit
-							</Button>
-						)}
-						{nextStatus && (
-							<Button
-								type="primary"
-								icon={nextStatus === "FINALIZED" ? <FiCheckCircle /> : <FiArchive />}
-								loading={formData.transitioning}
-								onClick={() => handleTransition(nextStatus)}
-							>
-								{nextStatus === "FINALIZED" ? "Finalize" : "Archive"}
-							</Button>
-						)}
-					</div>
-				</div>
 
-				{formData.editing ? (
-					<form onSubmit={handleSave} className="flex flex-col gap-3">
-						<textarea
-							value={formData.editText}
-							onChange={(e) => setFormData((prev) => ({ ...prev, editText: e.target.value }))}
-							rows={16}
-							className="w-full rounded-md border border-gray-300 p-3 font-mono text-xs text-gray-800 focus:border-blue-500 focus:outline-none"
-						/>
-						{formData.errors.length > 0 && (
-							<div className="flex flex-col gap-1 rounded-md border border-red-200 bg-red-50 p-3">
-								<ul className="list-disc pl-5 text-sm text-red-600">
-									{formData.errors.map((err, i) => (
-										<li key={i}>
-											{err.field !== "root" ? `${err.field}: ` : ""}
-											{err.message}
-										</li>
+					{formData.editing ? (
+						<form onSubmit={handleSave} className="flex flex-col gap-3">
+							<textarea
+								value={formData.editText}
+								onChange={(e) => setFormData((prev) => ({ ...prev, editText: e.target.value }))}
+								rows={16}
+								className="w-full rounded-md border border-gray-300 p-3 font-mono text-xs text-gray-800 focus:border-blue-500 focus:outline-none"
+							/>
+							{formData.errors.length > 0 && (
+								<div className="flex flex-col gap-1 rounded-md border border-red-200 bg-red-50 p-3">
+									<ul className="list-disc pl-5 text-sm text-red-600">
+										{formData.errors.map((err, i) => (
+											<li key={i}>
+												{err.field !== "root" ? `${err.field}: ` : ""}
+												{err.message}
+											</li>
+										))}
+									</ul>
+								</div>
+							)}
+							<div className="flex gap-2">
+								<Button type="primary" htmlType="submit" icon={<FiSave />} loading={formData.saving}>
+									Save
+								</Button>
+								<Button icon={<FiX />} onClick={() => setFormData((prev) => ({ ...prev, editing: false }))}>
+									Cancel
+								</Button>
+							</div>
+						</form>
+					) : (
+						<div className="flex flex-col gap-4 rounded-md border border-gray-100 p-4">
+							<div className="flex flex-wrap gap-6 text-sm">
+								<div className="flex flex-col">
+									<span className="text-gray-500">PO Date</span>
+									<span className="text-gray-900">{contract.fieldData.po_date}</span>
+								</div>
+								<div className="flex flex-col">
+									<span className="text-gray-500">Payment Terms</span>
+									<span className="text-gray-900">{contract.fieldData.payment_terms || "—"}</span>
+								</div>
+								<div className="flex flex-col">
+									<span className="text-gray-500">Delivery Terms</span>
+									<span className="text-gray-900">{contract.fieldData.delivery_terms || "—"}</span>
+								</div>
+							</div>
+							<div className="flex flex-col gap-2">
+								<span className="text-sm font-medium text-gray-700">Items</span>
+								<div className="flex flex-col divide-y divide-gray-100 border-t border-gray-100">
+									{contract.fieldData.items.map((item, i) => (
+										<div key={i} className="flex items-center justify-between py-2 text-sm">
+											<span className="text-gray-900">{item.description}</span>
+											<span className="text-gray-500">
+												{item.quantity} {item.quantity_unit || ""} × {item.unit_price} = {item.total}
+											</span>
+										</div>
 									))}
-								</ul>
-							</div>
-						)}
-						<div className="flex gap-2">
-							<Button type="primary" htmlType="submit" icon={<FiSave />} loading={formData.saving}>
-								Save
-							</Button>
-							<Button icon={<FiX />} onClick={() => setFormData((prev) => ({ ...prev, editing: false }))}>
-								Cancel
-							</Button>
-						</div>
-					</form>
-				) : (
-					<div className="flex flex-col gap-4 rounded-md border border-gray-100 p-4">
-						<div className="flex flex-wrap gap-6 text-sm">
-							<div className="flex flex-col">
-								<span className="text-gray-500">PO Date</span>
-								<span className="text-gray-900">{contract.fieldData.po_date}</span>
-							</div>
-							<div className="flex flex-col">
-								<span className="text-gray-500">Payment Terms</span>
-								<span className="text-gray-900">{contract.fieldData.payment_terms || "—"}</span>
-							</div>
-							<div className="flex flex-col">
-								<span className="text-gray-500">Delivery Terms</span>
-								<span className="text-gray-900">{contract.fieldData.delivery_terms || "—"}</span>
+								</div>
 							</div>
 						</div>
-						<div className="flex flex-col gap-2">
-							<span className="text-sm font-medium text-gray-700">Items</span>
-							<div className="flex flex-col divide-y divide-gray-100 border-t border-gray-100">
-								{contract.fieldData.items.map((item, i) => (
-									<div key={i} className="flex items-center justify-between py-2 text-sm">
-										<span className="text-gray-900">{item.description}</span>
-										<span className="text-gray-500">
-											{item.quantity} {item.quantity_unit || ""} × {item.unit_price} = {item.total}
-										</span>
-									</div>
-								))}
-							</div>
-						</div>
-					</div>
-				)}
+					)}
 
-				<div className="flex flex-col gap-2">
-					<span className="text-sm font-medium text-gray-700">Audit trail</span>
-					<div className="flex flex-col divide-y divide-gray-100 border-t border-gray-100">
-						{events.map((event) => (
-							<div key={event.id} className="flex items-center justify-between py-2 text-sm">
-								<span className="text-gray-900">{event.eventType}</span>
-								<span className="text-xs text-gray-500">
-									{new Date(event.createdAt).toLocaleString()} · {event.userId}
-								</span>
-							</div>
-						))}
+					<div className="flex flex-col gap-2">
+						<span className="text-sm font-medium text-gray-700">Audit trail</span>
+						<div className="flex flex-col divide-y divide-gray-100 border-t border-gray-100">
+							{events.map((event) => (
+								<div key={event.id} className="flex items-center justify-between py-2 text-sm">
+									<span className="text-gray-900">{event.eventType}</span>
+									<span className="text-xs text-gray-500">
+										{new Date(event.createdAt).toLocaleString()} · {event.userId}
+									</span>
+								</div>
+							))}
+						</div>
 					</div>
 				</div>
 			</div>
