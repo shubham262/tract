@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import meRoutes from "./src/routes/me.routes.js";
 
 const app = express();
 
@@ -13,6 +14,8 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 app.use(express.json());
+
+app.use("/api/me", meRoutes);
 
 app.listen(PORT, () => {
 	console.log(`Server started at port ${PORT}`);
