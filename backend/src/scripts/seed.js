@@ -1,4 +1,4 @@
-import prisma from "../src/lib/prisma.js";
+import prisma from "../config/prisma.js";
 
 const contractFixture = (overrides) => ({
 	client_name: "Acme Corp",
@@ -13,25 +13,30 @@ const contractFixture = (overrides) => ({
 	...overrides,
 });
 
-async function main() {
-	const seedUserId = process.env.SEED_USER_ID || "00000000-0000-0000-0000-000000000000";
+// Seeds a private pair of demo orgs + 5 contracts scoped to a single user.
+// Org slugs are derived from userId so re-running for the same user is a
+// no-op on the org/membership rows (upsert), but contracts are only meant
+// to be created once per user — callers should guard against re-invoking
+// this for a user who already has organizations.
+export const seed = async (userId) => {
+	if (!userId) throw new Error("seed(userId) requires a userId");
 
 	const acme = await prisma.organization.upsert({
-		where: { slug: "acme-industries" },
+		where: { slug: `acme-industries-${userId}` },
 		update: {},
-		create: { name: "Acme Industries", slug: "acme-industries" },
+		create: { name: "Acme Industries", slug: `acme-industries-${userId}` },
 	});
 	const globex = await prisma.organization.upsert({
-		where: { slug: "globex-manufacturing" },
+		where: { slug: `globex-manufacturing-${userId}` },
 		update: {},
-		create: { name: "Globex Manufacturing", slug: "globex-manufacturing" },
+		create: { name: "Globex Manufacturing", slug: `globex-manufacturing-${userId}` },
 	});
 
 	for (const org of [acme, globex]) {
 		await prisma.organizationMember.upsert({
-			where: { organizationId_userId: { organizationId: org.id, userId: seedUserId } },
+			where: { organizationId_userId: { organizationId: org.id, userId } },
 			update: {},
-			create: { organizationId: org.id, userId: seedUserId, role: "OWNER" },
+			create: { organizationId: org.id, userId, role: "OWNER" },
 		});
 	}
 
@@ -51,32 +56,26 @@ async function main() {
 				clientName: c.fieldData.client_name,
 				poRefNo: c.fieldData.po_ref_no,
 				fieldData: c.fieldData,
-				createdByUserId: seedUserId,
+				createdByUserId: userId,
 			},
 		});
 
 		await prisma.contractEvent.create({
-			data: { contractId: contract.id, organizationId: c.organizationId, eventType: "CREATED", userId: seedUserId, metadata: { status: "DRAFT" } },
+			data: { contractId: contract.id, organizationId: c.organizationId, eventType: "CREATED", userId, metadata: { status: "DRAFT" } },
 		});
 
 		if (c.status !== "DRAFT") {
 			await prisma.contractEvent.create({
-				data: { contractId: contract.id, organizationId: c.organizationId, eventType: "STATUS_CHANGED", userId: seedUserId, metadata: { from: "DRAFT", to: "FINALIZED" } },
+				data: { contractId: contract.id, organizationId: c.organizationId, eventType: "STATUS_CHANGED", userId, metadata: { from: "DRAFT", to: "FINALIZED" } },
 			});
 		}
 		if (c.status === "ARCHIVED") {
 			await prisma.contractEvent.create({
-				data: { contractId: contract.id, organizationId: c.organizationId, eventType: "STATUS_CHANGED", userId: seedUserId, metadata: { from: "FINALIZED", to: "ARCHIVED" } },
+				data: { contractId: contract.id, organizationId: c.organizationId, eventType: "STATUS_CHANGED", userId, metadata: { from: "FINALIZED", to: "ARCHIVED" } },
 			});
 		}
 	}
 
-	console.log("Seed complete: 2 organizations, 5 contracts.");
-}
-
-main()
-	.catch((err) => {
-		console.error(err);
-		process.exit(1);
-	})
-	.finally(() => process.exit(0));
+	console.log(`Seed complete for user ${userId}: 2 organizations, 5 contracts.`);
+	return [acme, globex];
+};

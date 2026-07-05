@@ -96,3 +96,14 @@ export const updateContractStatus = async (orgId, contractId, status) => {
 		);
 	}
 };
+
+export const deleteContract = async (orgId, contractId) => {
+	try {
+		await api.delete(`/api/organizations/${orgId}/contracts/${contractId}`);
+	} catch (error) {
+		throw new Error(
+			error?.response?.data?.error ||
+				"Something went wrong while deleting contract"
+		);
+	}
+};

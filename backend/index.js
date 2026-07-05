@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 
 import organizationRoutes from "./src/routes/organizations.routes.js";
+import authRoutes from "./src/routes/auth.routes.js";
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use(express.json());
 
 
 app.use("/api/organizations", organizationRoutes);
+app.use("/api/auth", authRoutes);
 
 app.listen(PORT, () => {
 	console.log(`Server started at port ${PORT}`);

@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
-import { Button, message } from "antd";
+import { Button, message, Popconfirm } from "antd";
 import {
 	FiArrowLeft,
 	FiCheckCircle,
@@ -11,6 +11,7 @@ import {
 	FiEdit2,
 	FiSave,
 	FiX,
+	FiTrash2,
 } from "react-icons/fi";
 import { supabase } from "@/config/supabase";
 import {
@@ -18,6 +19,7 @@ import {
 	getContractEvents,
 	updateContract,
 	updateContractStatus,
+	deleteContract,
 } from "@/service/contracts";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -37,6 +39,7 @@ export default function ContractDetailPage() {
 		errors: [],
 		saving: false,
 		transitioning: false,
+		deleting: false,
 	});
 	const eventSourceRef = useRef(null);
 
@@ -114,6 +117,18 @@ export default function ContractDetailPage() {
 		} catch (err) {
 			message.error(err.message);
 			setFormData((prev) => ({ ...prev, transitioning: false }));
+		}
+	};
+
+	const handleDelete = async () => {
+		setFormData((prev) => ({ ...prev, deleting: true }));
+		try {
+			await deleteContract(currentOrgId, contractId);
+			message.success("Contract deleted.");
+			router.push("/contracts");
+		} catch (err) {
+			message.error(err.message);
+			setFormData((prev) => ({ ...prev, deleting: false }));
 		}
 	};
 
@@ -198,6 +213,19 @@ export default function ContractDetailPage() {
 						<Button icon={<FiEdit2 />} onClick={startEditing}>
 							Edit
 						</Button>
+					)}
+					{contract.status === "DRAFT" && !formData.editing && (
+						<Popconfirm
+							title="Delete this contract?"
+							description="This cannot be undone."
+							okText="Delete"
+							okButtonProps={{ danger: true }}
+							onConfirm={handleDelete}
+						>
+							<Button danger icon={<FiTrash2 />} loading={formData.deleting}>
+								Delete
+							</Button>
+						</Popconfirm>
 					)}
 					{nextStatus && (
 						<Button
