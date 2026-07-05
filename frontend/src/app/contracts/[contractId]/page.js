@@ -4,9 +4,16 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { Button, message } from "antd";
-import { FiArrowLeft, FiCheckCircle, FiArchive, FiEdit2, FiSave, FiX } from "react-icons/fi";
-import { supabase } from "@/lib/supabaseClient";
-import { apiFetch } from "@/lib/apiClient";
+import {
+	FiArrowLeft,
+	FiCheckCircle,
+	FiArchive,
+	FiEdit2,
+	FiSave,
+	FiX,
+} from "react-icons/fi";
+import { supabase } from "@/config/supabase";
+import { apiFetch } from "@/service";
 import AppHeader from "@/components/AppHeader";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -34,7 +41,9 @@ export default function ContractDetailPage() {
 		try {
 			const [{ contract }, { events }] = await Promise.all([
 				apiFetch(`/api/organizations/${currentOrgId}/contracts/${contractId}`),
-				apiFetch(`/api/organizations/${currentOrgId}/contracts/${contractId}/events`),
+				apiFetch(
+					`/api/organizations/${currentOrgId}/contracts/${contractId}/events`
+				),
 			]);
 			setFormData((prev) => ({ ...prev, contract, events, loading: false }));
 		} catch (err) {
@@ -65,9 +74,14 @@ export default function ContractDetailPage() {
 			source.onmessage = (evt) => {
 				try {
 					const payload = JSON.parse(evt.data);
-					if (payload.type === "contract_status_changed" && payload.contract.id === contractId) {
+					if (
+						payload.type === "contract_status_changed" &&
+						payload.contract.id === contractId
+					) {
 						setFormData((prev) => ({ ...prev, contract: payload.contract }));
-						message.info(`Contract status changed to ${payload.contract.status}.`);
+						message.info(
+							`Contract status changed to ${payload.contract.status}.`
+						);
 					}
 				} catch {
 					// ignore heartbeat/comment frames
@@ -84,10 +98,13 @@ export default function ContractDetailPage() {
 	const handleTransition = async (targetStatus) => {
 		setFormData((prev) => ({ ...prev, transitioning: true }));
 		try {
-			const { contract } = await apiFetch(`/api/organizations/${currentOrgId}/contracts/${contractId}/status`, {
-				method: "PATCH",
-				body: JSON.stringify({ status: targetStatus }),
-			});
+			const { contract } = await apiFetch(
+				`/api/organizations/${currentOrgId}/contracts/${contractId}/status`,
+				{
+					method: "PATCH",
+					body: JSON.stringify({ status: targetStatus }),
+				}
+			);
 			setFormData((prev) => ({ ...prev, contract, transitioning: false }));
 			message.success(`Contract ${targetStatus.toLowerCase()}.`);
 		} catch (err) {
@@ -121,11 +138,19 @@ export default function ContractDetailPage() {
 		}
 
 		try {
-			const { contract } = await apiFetch(`/api/organizations/${currentOrgId}/contracts/${contractId}`, {
-				method: "PATCH",
-				body: JSON.stringify(payload),
-			});
-			setFormData((prev) => ({ ...prev, contract, editing: false, saving: false }));
+			const { contract } = await apiFetch(
+				`/api/organizations/${currentOrgId}/contracts/${contractId}`,
+				{
+					method: "PATCH",
+					body: JSON.stringify(payload),
+				}
+			);
+			setFormData((prev) => ({
+				...prev,
+				contract,
+				editing: false,
+				saving: false,
+			}));
 			message.success("Contract saved.");
 			loadContract();
 		} catch (err) {
@@ -175,8 +200,12 @@ export default function ContractDetailPage() {
 
 					<div className="flex items-center justify-between">
 						<div className="flex flex-col gap-1">
-							<h1 className="text-2xl font-semibold text-gray-900">{contract.clientName}</h1>
-							<span className="text-sm text-gray-500">PO {contract.poRefNo}</span>
+							<h1 className="text-2xl font-semibold text-gray-900">
+								{contract.clientName}
+							</h1>
+							<span className="text-sm text-gray-500">
+								PO {contract.poRefNo}
+							</span>
 						</div>
 						<div className="flex items-center gap-2">
 							<span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
@@ -190,7 +219,13 @@ export default function ContractDetailPage() {
 							{nextStatus && (
 								<Button
 									type="primary"
-									icon={nextStatus === "FINALIZED" ? <FiCheckCircle /> : <FiArchive />}
+									icon={
+										nextStatus === "FINALIZED" ? (
+											<FiCheckCircle />
+										) : (
+											<FiArchive />
+										)
+									}
 									loading={formData.transitioning}
 									onClick={() => handleTransition(nextStatus)}
 								>
@@ -204,7 +239,9 @@ export default function ContractDetailPage() {
 						<form onSubmit={handleSave} className="flex flex-col gap-3">
 							<textarea
 								value={formData.editText}
-								onChange={(e) => setFormData((prev) => ({ ...prev, editText: e.target.value }))}
+								onChange={(e) =>
+									setFormData((prev) => ({ ...prev, editText: e.target.value }))
+								}
 								rows={16}
 								className="w-full rounded-md border border-gray-300 p-3 font-mono text-xs text-gray-800 focus:border-blue-500 focus:outline-none"
 							/>
@@ -221,10 +258,20 @@ export default function ContractDetailPage() {
 								</div>
 							)}
 							<div className="flex gap-2">
-								<Button type="primary" htmlType="submit" icon={<FiSave />} loading={formData.saving}>
+								<Button
+									type="primary"
+									htmlType="submit"
+									icon={<FiSave />}
+									loading={formData.saving}
+								>
 									Save
 								</Button>
-								<Button icon={<FiX />} onClick={() => setFormData((prev) => ({ ...prev, editing: false }))}>
+								<Button
+									icon={<FiX />}
+									onClick={() =>
+										setFormData((prev) => ({ ...prev, editing: false }))
+									}
+								>
 									Cancel
 								</Button>
 							</div>
@@ -234,25 +281,35 @@ export default function ContractDetailPage() {
 							<div className="flex flex-wrap gap-6 text-sm">
 								<div className="flex flex-col">
 									<span className="text-gray-500">PO Date</span>
-									<span className="text-gray-900">{contract.fieldData.po_date}</span>
+									<span className="text-gray-900">
+										{contract.fieldData.po_date}
+									</span>
 								</div>
 								<div className="flex flex-col">
 									<span className="text-gray-500">Payment Terms</span>
-									<span className="text-gray-900">{contract.fieldData.payment_terms || "—"}</span>
+									<span className="text-gray-900">
+										{contract.fieldData.payment_terms || "—"}
+									</span>
 								</div>
 								<div className="flex flex-col">
 									<span className="text-gray-500">Delivery Terms</span>
-									<span className="text-gray-900">{contract.fieldData.delivery_terms || "—"}</span>
+									<span className="text-gray-900">
+										{contract.fieldData.delivery_terms || "—"}
+									</span>
 								</div>
 							</div>
 							<div className="flex flex-col gap-2">
 								<span className="text-sm font-medium text-gray-700">Items</span>
 								<div className="flex flex-col divide-y divide-gray-100 border-t border-gray-100">
 									{contract.fieldData.items.map((item, i) => (
-										<div key={i} className="flex items-center justify-between py-2 text-sm">
+										<div
+											key={i}
+											className="flex items-center justify-between py-2 text-sm"
+										>
 											<span className="text-gray-900">{item.description}</span>
 											<span className="text-gray-500">
-												{item.quantity} {item.quantity_unit || ""} × {item.unit_price} = {item.total}
+												{item.quantity} {item.quantity_unit || ""} ×{" "}
+												{item.unit_price} = {item.total}
 											</span>
 										</div>
 									))}
@@ -262,13 +319,19 @@ export default function ContractDetailPage() {
 					)}
 
 					<div className="flex flex-col gap-2">
-						<span className="text-sm font-medium text-gray-700">Audit trail</span>
+						<span className="text-sm font-medium text-gray-700">
+							Audit trail
+						</span>
 						<div className="flex flex-col divide-y divide-gray-100 border-t border-gray-100">
 							{events.map((event) => (
-								<div key={event.id} className="flex items-center justify-between py-2 text-sm">
+								<div
+									key={event.id}
+									className="flex items-center justify-between py-2 text-sm"
+								>
 									<span className="text-gray-900">{event.eventType}</span>
 									<span className="text-xs text-gray-500">
-										{new Date(event.createdAt).toLocaleString()} · {event.userId}
+										{new Date(event.createdAt).toLocaleString()} ·{" "}
+										{event.userId}
 									</span>
 								</div>
 							))}

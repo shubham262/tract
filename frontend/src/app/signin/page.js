@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useDispatch } from "react-redux";
 import { Input, Button, message } from "antd";
 import { FiMail, FiLock } from "react-icons/fi";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/config/supabase";
 import { updateUserInfo } from "@/redux/authSlice";
 
 export default function SignInPage() {

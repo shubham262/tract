@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useSelector, useDispatch } from "react-redux";
 import { Button, message } from "antd";
 import { FiFileText, FiArrowRight, FiLogOut } from "react-icons/fi";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/config/supabase";
 import { updateUserInfo } from "@/redux/authSlice";
 
 export default function Home() {
@@ -27,7 +27,9 @@ export default function Home() {
 				<div className="flex items-center gap-3">
 					{userInfo ? (
 						<>
-							<span className="hidden text-sm text-gray-500 sm:inline">{userInfo.email}</span>
+							<span className="hidden text-sm text-gray-500 sm:inline">
+								{userInfo.email}
+							</span>
 							<Button icon={<FiLogOut />} onClick={handleSignOut}>
 								Sign Out
 							</Button>
@@ -51,19 +53,30 @@ export default function Home() {
 						Contract Operations, streamlined.
 					</h1>
 					<p className="text-base text-gray-600 sm:text-lg">
-						Create, track, and manage contracts across your organization from a single console.
+						Create, track, and manage contracts across your organization from a
+						single console.
 					</p>
 					<div className="flex flex-col gap-3 sm:flex-row">
 						{userInfo ? (
 							<Link href="/organizations">
-								<Button type="primary" size="large" icon={<FiArrowRight />} iconPlacement="end">
+								<Button
+									type="primary"
+									size="large"
+									icon={<FiArrowRight />}
+									iconPlacement="end"
+								>
 									Go to your organizations
 								</Button>
 							</Link>
 						) : (
 							<>
 								<Link href="/signup">
-									<Button type="primary" size="large" icon={<FiArrowRight />} iconPlacement="end">
+									<Button
+										type="primary"
+										size="large"
+										icon={<FiArrowRight />}
+										iconPlacement="end"
+									>
 										Get Started
 									</Button>
 								</Link>

@@ -5,9 +5,14 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSelector } from "react-redux";
 import { Input, Button, message } from "antd";
-import { FiPlus, FiSearch, FiChevronLeft, FiChevronRight } from "react-icons/fi";
-import { supabase } from "@/lib/supabaseClient";
-import { apiFetch } from "@/lib/apiClient";
+import {
+	FiPlus,
+	FiSearch,
+	FiChevronLeft,
+	FiChevronRight,
+} from "react-icons/fi";
+import { supabase } from "@/config/supabase";
+import { apiFetch } from "@/service";
 import AppHeader from "@/components/AppHeader";
 
 const PAGE_SIZE = 20;
@@ -35,7 +40,10 @@ export default function ContractsPage() {
 			if (!currentOrgId) return;
 			setFormData((prev) => ({ ...prev, loading: true }));
 			try {
-				const params = new URLSearchParams({ page: String(page), pageSize: String(PAGE_SIZE) });
+				const params = new URLSearchParams({
+					page: String(page),
+					pageSize: String(PAGE_SIZE),
+				});
 				if (status) params.set("status", status);
 				if (q?.trim()) params.set("client", q.trim());
 
@@ -43,9 +51,19 @@ export default function ContractsPage() {
 					contracts,
 					total,
 					page: returnedPage,
-				} = await apiFetch(`/api/organizations/${currentOrgId}/contracts?${params.toString()}`);
+				} = await apiFetch(
+					`/api/organizations/${currentOrgId}/contracts?${params.toString()}`
+				);
 
-				setFormData((prev) => ({ ...prev, contracts, total, page: returnedPage, status, q, loading: false }));
+				setFormData((prev) => ({
+					...prev,
+					contracts,
+					total,
+					page: returnedPage,
+					status,
+					q,
+					loading: false,
+				}));
 			} catch (err) {
 				message.error(err.message);
 				setFormData((prev) => ({ ...prev, loading: false }));
@@ -99,7 +117,9 @@ export default function ContractsPage() {
 						<Input
 							placeholder="Search by client name"
 							value={formData.q}
-							onChange={(e) => setFormData((prev) => ({ ...prev, q: e.target.value }))}
+							onChange={(e) =>
+								setFormData((prev) => ({ ...prev, q: e.target.value }))
+							}
 							prefix={<FiSearch className="text-gray-400" />}
 						/>
 						<select
@@ -130,12 +150,18 @@ export default function ContractsPage() {
 								className="flex items-center justify-between gap-4 py-4 hover:bg-gray-50"
 							>
 								<div className="flex flex-col">
-									<span className="font-medium text-gray-900">{contract.clientName}</span>
+									<span className="font-medium text-gray-900">
+										{contract.clientName}
+									</span>
 									<span className="text-xs text-gray-500">
 										PO {contract.poRefNo} · {contract.fieldData?.po_date}
 									</span>
 								</div>
-								<span className={`rounded-full px-3 py-1 text-xs font-medium ${STATUS_STYLES[contract.status]}`}>
+								<span
+									className={`rounded-full px-3 py-1 text-xs font-medium ${
+										STATUS_STYLES[contract.status]
+									}`}
+								>
 									{contract.status}
 								</span>
 							</Link>
@@ -147,7 +173,9 @@ export default function ContractsPage() {
 							<Button
 								icon={<FiChevronLeft />}
 								disabled={formData.page <= 1}
-								onClick={() => loadContracts(formData.page - 1, formData.status, formData.q)}
+								onClick={() =>
+									loadContracts(formData.page - 1, formData.status, formData.q)
+								}
 							>
 								Previous
 							</Button>
@@ -158,7 +186,9 @@ export default function ContractsPage() {
 								icon={<FiChevronRight />}
 								iconPlacement="end"
 								disabled={formData.page >= totalPages}
-								onClick={() => loadContracts(formData.page + 1, formData.status, formData.q)}
+								onClick={() =>
+									loadContracts(formData.page + 1, formData.status, formData.q)
+								}
 							>
 								Next
 							</Button>

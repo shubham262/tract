@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/config/supabase";
 import { updateUserInfo } from "@/redux/authSlice";
 
 const AuthListener = () => {

@@ -6,8 +6,8 @@ import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import { Input, Button, message } from "antd";
 import { FiPlus, FiCheck, FiFileText } from "react-icons/fi";
-import { supabase } from "@/lib/supabaseClient";
-import { apiFetch } from "@/lib/apiClient";
+import { supabase } from "@/config/supabase";
+import { apiFetch } from "@/service";
 import { setOrganizations, setCurrentOrgId } from "@/redux/orgSlice";
 import AppHeader from "@/components/AppHeader";
 
@@ -19,7 +19,11 @@ export default function OrganizationsPage() {
 	const userInfo = useSelector((state) => state.auth.userInfo);
 	const { organizations, currentOrgId } = useSelector((state) => state.org);
 
-	const [formData, setFormData] = useState({ name: "", creating: false, loading: true });
+	const [formData, setFormData] = useState({
+		name: "",
+		creating: false,
+		loading: true,
+	});
 
 	const loadOrganizations = useCallback(async () => {
 		try {
@@ -101,9 +105,12 @@ export default function OrganizationsPage() {
 				<div className="flex w-full max-w-lg flex-col gap-8">
 					<div className="flex items-center justify-between gap-4">
 						<div className="flex flex-col gap-1">
-							<h1 className="text-2xl font-semibold text-gray-900">Your organizations</h1>
+							<h1 className="text-2xl font-semibold text-gray-900">
+								Your organizations
+							</h1>
 							<p className="text-sm text-gray-500">
-								Signed in as {userInfo?.email}. Select an organization to work in, or create a new one.
+								Signed in as {userInfo?.email}. Select an organization to work
+								in, or create a new one.
 							</p>
 						</div>
 						{currentOrgId && (
@@ -115,7 +122,9 @@ export default function OrganizationsPage() {
 
 					<div className="flex flex-col gap-3">
 						{organizations.length === 0 && (
-							<p className="text-sm text-gray-500">You don&apos;t belong to any organizations yet.</p>
+							<p className="text-sm text-gray-500">
+								You don&apos;t belong to any organizations yet.
+							</p>
 						)}
 						{organizations.map((org) => (
 							<button
@@ -131,19 +140,32 @@ export default function OrganizationsPage() {
 									<span className="font-medium text-gray-900">{org.name}</span>
 									<span className="text-xs text-gray-500">{org.slug}</span>
 								</div>
-								{currentOrgId === org.id && <FiCheck className="text-blue-600" />}
+								{currentOrgId === org.id && (
+									<FiCheck className="text-blue-600" />
+								)}
 							</button>
 						))}
 					</div>
 
-					<form onSubmit={handleCreate} className="flex flex-col gap-3 border-t border-gray-100 pt-6 sm:flex-row">
+					<form
+						onSubmit={handleCreate}
+						className="flex flex-col gap-3 border-t border-gray-100 pt-6 sm:flex-row"
+					>
 						<Input
 							size="large"
 							placeholder="New organization name"
 							value={formData.name}
-							onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+							onChange={(e) =>
+								setFormData((prev) => ({ ...prev, name: e.target.value }))
+							}
 						/>
-						<Button type="primary" size="large" htmlType="submit" icon={<FiPlus />} loading={formData.creating}>
+						<Button
+							type="primary"
+							size="large"
+							htmlType="submit"
+							icon={<FiPlus />}
+							loading={formData.creating}
+						>
 							Create
 						</Button>
 					</form>

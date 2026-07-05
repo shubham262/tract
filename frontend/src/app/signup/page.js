@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Input, Button, message } from "antd";
 import { FiMail, FiLock } from "react-icons/fi";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/config/supabase";
 
 export default function SignUpPage() {
 	const router = useRouter();

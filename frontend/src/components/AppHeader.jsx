@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { Select, Button, message } from "antd";
 import { FiFileText, FiLogOut } from "react-icons/fi";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/config/supabase";
 import { updateUserInfo } from "@/redux/authSlice";
 import { setCurrentOrgId } from "@/redux/orgSlice";
 
