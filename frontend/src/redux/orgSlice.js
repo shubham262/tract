@@ -2,7 +2,11 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
 	organizations: [],
-	currentOrgId: null,
+
+	currentOrgId:
+		typeof window !== "undefined"
+			? localStorage.getItem("tract:currentOrgId")
+			: null,
 };
 
 const orgSlice = createSlice({

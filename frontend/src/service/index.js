@@ -4,7 +4,7 @@ import { supabase } from "@/config/supabase";
 const api = axios.create({
 	baseURL:
 		process.env.NEXT_PUBLIC_ENVIRONMENT === "production"
-			? process.env.NEXT_PUBLIC_BACKEND_URL
+			? process.env.NEXT_PUBLIC_API_URL
 			: "http://localhost:3001",
 	headers: {
 		"Content-Type": "application/json",
