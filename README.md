@@ -59,8 +59,7 @@ The seed script is idempotent (organizations are upserted by slug), so re-runnin
 | `DIRECT_URL` | Supabase Postgres — **direct** connection (port `5432`), used only by Prisma Migrate/introspection |
 | `SUPABASE_URL` | Your Supabase project URL |
 | `SUPABASE_ANON_KEY` | Your Supabase anon/publishable key (used server-side to call `supabase.auth.getUser()`) |
-| `SUPABASE_JWT_SECRET` | Not currently used (auth verification goes through Supabase's API, not local JWT decoding) — safe to leave blank |
-| `SEED_USER_ID` | Optional, seed-script only — see "Seeding data into your own account" above |
+
 
 ### `frontend/.env.local`
 
@@ -69,6 +68,7 @@ The seed script is idempotent (organizations are upserted by slug), so re-runnin
 | `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Your Supabase anon/publishable key |
 | `NEXT_PUBLIC_API_URL` | Base URL of the backend API (e.g. `http://localhost:3001`). Also used to build the SSE stream URL — no separate SSE env var is needed. |
+|NEXT_PUBLIC_ENVIRONMENT=DEVELOPMENT
 
 ## Contracts feature notes
 
