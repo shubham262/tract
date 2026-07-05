@@ -7,6 +7,7 @@ import { FiPlus, FiCheck, FiFileText } from "react-icons/fi";
 import Link from "next/link";
 import { getOrganizations, createOrganization } from "@/service/organizations";
 import { setOrganizations, setCurrentOrgId } from "@/redux/orgSlice";
+import { ensureSeeded } from "@/service/auth";
 
 const CURRENT_ORG_STORAGE_KEY = "tract:currentOrgId";
 
@@ -32,6 +33,7 @@ const OrganizationsPage = () => {
 			if (validStoredId) {
 				dispatch(setCurrentOrgId(validStoredId));
 			} else if (orgs.length > 0) {
+				await ensureSeeded();
 				dispatch(setCurrentOrgId(orgs[0].id));
 				window.localStorage.setItem(CURRENT_ORG_STORAGE_KEY, orgs[0].id);
 			}
