@@ -24,7 +24,7 @@ cd backend
 npm install
 cp .env.example .env   # fill in the values below
 npx prisma migrate dev
-npm run seed            # optional — seeds 2 orgs + 5 contracts, see note below
+npm run build            
 npm run dev              # starts on http://localhost:3001
 ```
 
