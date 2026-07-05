@@ -1,4 +1,4 @@
-import prisma from "../lib/prisma.js";
+import prisma from "../config/prisma.js";
 import { validateContractPayload } from "../utils/validateContractPayload.js";
 import sseHub from "../lib/sseHub.js";
 
@@ -10,7 +10,9 @@ export const createContract = async (req, res) => {
 	const result = validateContractPayload(req.body);
 
 	if (!result.valid) {
-		return res.status(400).json({ error: "Invalid contract data", details: result.errors });
+		return res
+			.status(400)
+			.json({ error: "Invalid contract data", details: result.errors });
 	}
 
 	try {
@@ -47,7 +49,14 @@ export const createContract = async (req, res) => {
 
 export const listContracts = async (req, res) => {
 	const { organizationId } = req.params;
-	const { status, q, client, contractId, page = "1", pageSize = "20" } = req.query;
+	const {
+		status,
+		q,
+		client,
+		contractId,
+		page = "1",
+		pageSize = "20",
+	} = req.query;
 
 	const pageNum = Math.max(parseInt(page, 10) || 1, 1);
 	const pageSizeNum = Math.min(Math.max(parseInt(pageSize, 10) || 20, 1), 100);
@@ -91,7 +100,9 @@ export const listContracts = async (req, res) => {
 export const getContract = async (req, res) => {
 	const { organizationId, contractId } = req.params;
 	try {
-		const contract = await prisma.contract.findFirst({ where: { id: contractId, organizationId } });
+		const contract = await prisma.contract.findFirst({
+			where: { id: contractId, organizationId },
+		});
 		if (!contract) return res.status(404).json({ error: "Contract not found" });
 		res.json({ contract });
 	} catch (err) {
@@ -105,14 +116,20 @@ export const updateContract = async (req, res) => {
 	const result = validateContractPayload(req.body);
 
 	if (!result.valid) {
-		return res.status(400).json({ error: "Invalid contract data", details: result.errors });
+		return res
+			.status(400)
+			.json({ error: "Invalid contract data", details: result.errors });
 	}
 
 	try {
-		const existing = await prisma.contract.findFirst({ where: { id: contractId, organizationId } });
+		const existing = await prisma.contract.findFirst({
+			where: { id: contractId, organizationId },
+		});
 		if (!existing) return res.status(404).json({ error: "Contract not found" });
 		if (existing.status !== "DRAFT") {
-			return res.status(409).json({ error: "Only draft contracts can be edited" });
+			return res
+				.status(409)
+				.json({ error: "Only draft contracts can be edited" });
 		}
 
 		const [updated] = await prisma.$transaction([
@@ -147,11 +164,15 @@ export const updateContractStatus = async (req, res) => {
 	const { status: targetStatus } = req.body;
 
 	if (!["FINALIZED", "ARCHIVED"].includes(targetStatus)) {
-		return res.status(400).json({ error: "status must be FINALIZED or ARCHIVED" });
+		return res
+			.status(400)
+			.json({ error: "status must be FINALIZED or ARCHIVED" });
 	}
 
 	try {
-		const contract = await prisma.contract.findFirst({ where: { id: contractId, organizationId } });
+		const contract = await prisma.contract.findFirst({
+			where: { id: contractId, organizationId },
+		});
 		if (!contract) return res.status(404).json({ error: "Contract not found" });
 
 		const allowedNext = NEXT_STATUS[contract.status];
@@ -162,7 +183,10 @@ export const updateContractStatus = async (req, res) => {
 		}
 
 		const [updated] = await prisma.$transaction([
-			prisma.contract.update({ where: { id: contractId }, data: { status: targetStatus } }),
+			prisma.contract.update({
+				where: { id: contractId },
+				data: { status: targetStatus },
+			}),
 			prisma.contractEvent.create({
 				data: {
 					contractId,
@@ -174,7 +198,10 @@ export const updateContractStatus = async (req, res) => {
 			}),
 		]);
 
-		sseHub.broadcast(organizationId, { type: "contract_status_changed", contract: updated });
+		sseHub.broadcast(organizationId, {
+			type: "contract_status_changed",
+			contract: updated,
+		});
 
 		res.json({ contract: updated });
 	} catch (err) {
@@ -186,10 +213,14 @@ export const updateContractStatus = async (req, res) => {
 export const deleteContract = async (req, res) => {
 	const { organizationId, contractId } = req.params;
 	try {
-		const existing = await prisma.contract.findFirst({ where: { id: contractId, organizationId } });
+		const existing = await prisma.contract.findFirst({
+			where: { id: contractId, organizationId },
+		});
 		if (!existing) return res.status(404).json({ error: "Contract not found" });
 		if (existing.status !== "DRAFT") {
-			return res.status(409).json({ error: "Only draft contracts can be deleted" });
+			return res
+				.status(409)
+				.json({ error: "Only draft contracts can be deleted" });
 		}
 
 		// ContractEvent rows have no FK to Contract, so the DELETED event
@@ -201,7 +232,10 @@ export const deleteContract = async (req, res) => {
 					organizationId,
 					eventType: "DELETED",
 					userId: req.user.id,
-					metadata: { clientName: existing.clientName, poRefNo: existing.poRefNo },
+					metadata: {
+						clientName: existing.clientName,
+						poRefNo: existing.poRefNo,
+					},
 				},
 			}),
 			prisma.contract.delete({ where: { id: contractId } }),

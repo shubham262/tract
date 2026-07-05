@@ -1,4 +1,4 @@
-import prisma from "../lib/prisma.js";
+import prisma from "../config/prisma.js";
 
 const requireOrgMembership = async (req, res, next) => {
 	const { organizationId } = req.params;

@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import meRoutes from "./src/routes/me.routes.js";
+
 import organizationRoutes from "./src/routes/organizations.routes.js";
 
 const app = express();
@@ -16,7 +16,7 @@ app.use(cors(corsOptions));
 
 app.use(express.json());
 
-app.use("/api/me", meRoutes);
+
 app.use("/api/organizations", organizationRoutes);
 
 app.listen(PORT, () => {

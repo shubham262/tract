@@ -1,4 +1,4 @@
-import prisma from "../lib/prisma.js";
+import prisma from "../config/prisma.js";
 
 const slugify = (name) =>
 	name
@@ -7,7 +7,8 @@ const slugify = (name) =>
 		.replace(/[^a-z0-9]+/g, "-")
 		.replace(/^-+|-+$/g, "");
 
-const generateSlug = (name) => `${slugify(name) || "org"}-${Math.random().toString(36).slice(2, 8)}`;
+const generateSlug = (name) =>
+	`${slugify(name) || "org"}-${Math.random().toString(36).slice(2, 8)}`;
 
 export const createOrganization = async (req, res) => {
 	const { name } = req.body;
@@ -64,5 +65,7 @@ export const listOrganizations = async (req, res) => {
 };
 
 export const getOrganization = (req, res) => {
-	res.json({ organization: { ...req.organization, role: req.membership.role } });
+	res.json({
+		organization: { ...req.organization, role: req.membership.role },
+	});
 };
