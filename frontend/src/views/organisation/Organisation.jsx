@@ -24,6 +24,7 @@ const OrganizationsPage = () => {
 
 	const loadOrganizations = useCallback(async () => {
 		try {
+			await ensureSeeded();
 			const { organizations: orgs } = await getOrganizations();
 			dispatch(setOrganizations(orgs));
 
@@ -33,7 +34,6 @@ const OrganizationsPage = () => {
 			if (validStoredId) {
 				dispatch(setCurrentOrgId(validStoredId));
 			} else if (orgs.length > 0) {
-				await ensureSeeded();
 				dispatch(setCurrentOrgId(orgs[0].id));
 				window.localStorage.setItem(CURRENT_ORG_STORAGE_KEY, orgs[0].id);
 			}
